@@ -55,3 +55,24 @@ def classify_document(text: str) -> dict:
         raw = raw.strip("`").replace("json","",1).strip()
 
     return json.loads(raw)
+
+ROUTING = {
+    "Invoice": "Accounts Payable",
+    "Purchase Order": "Procurement",
+    "Contract": "Legal",
+    "Other": "Manual Review",
+}
+
+
+def route_document(label: str) -> str:
+    """Look up the department a classified document should route to."""
+    return ROUTING.get(label, "Manual Review")
+
+
+def process_document(pdf_path: str) -> dict:
+    """Full pipeline: extract text, classify, and route a single PDF."""
+    text = extract_text(pdf_path)
+    result = classify_document(text)
+    result["routing_department"] = route_document(result["label"])
+    result["source_file"] = str(pdf_path)
+    return result
